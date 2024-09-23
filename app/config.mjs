@@ -8,10 +8,18 @@ const configuration = {
         port: process.env.SERVER_PORT || 3000,
     },
     database: {
-        db_name: process.env.DATABASE_NAME,
-        db_username:process.env.DATABASE_USERNAME,
-        db_password:process.env.DATABASE_PASSWORD,
-        db_port:process.env.DATABASE_PORT,
+        db_type:process.env.DATABASE_TYPE || 'mysql',
+        db_name: process.env.DATABASE_NAME || 'db',
+        db_username:process.env.DATABASE_USERNAME || 'root',
+        db_password:process.env.DATABASE_PASSWORD || '',
+        db_port:process.env.DATABASE_PORT || 3306,
+        db_host:process.env.DATABASE_HOST || 'localhost',
+        db_pool:{
+            max:5,
+            min:0,
+            acquire:30000,
+            idle:10000,
+        }
     },
     logging:{
         print_logging:true,
