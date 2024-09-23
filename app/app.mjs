@@ -1,9 +1,13 @@
 import express from "express";
 import morgan from 'morgan';
-import bodyParser from 'body-parser'
-import appRouter from "./routers.mjs"
-import config from "./config.mjs"
-import loggingStream from './logging.mjs'
+import cors from 'cors';
+import compression from 'compression';
+import bodyParser from 'body-parser';
+import helmet from 'helmet';
+
+import appRouter from "./routers.mjs";
+import config from "./config.mjs";
+import loggingStream from './logging.mjs';
 
 const app = express();
 
@@ -17,29 +21,40 @@ if (config.logging.print_logging){
     
 }
 
-//Middleware logger
-if (config.node_environment === 'development'){
+//Middleware logger morgan
+if (config.node_environment === 'production'){
     app.use(morgan('combined',{stream:logging_stream}));
 }
 else{
     app.use(morgan('dev',{stream:logging_stream}));
 }
 
-
 //Middleware minimalista que actua como logger de las peticiones, se desactiva pues se usa morgan
 //middleware para hacer seguimiento de las peticiones al servidor
-/*
 app.use((req,res, next)=>{
     var datetime = new Date();
-    console.log(`method: ${req.method} / ${res.statusCode} | url: ${req.url} | time: ${datetime}`);
+    console.log(`metodo: \x1b[33m${req.method} / ${res.statusCode} \x1b[0m| url: \x1b[35m${req.url}\x1b[0m | tiempo: ${datetime}`);
     next();
 });
-*/
-//
+
+//middleware para el manejo de ataques
+app.use(helmet());
+
+//cors
+app.use(cors({
+    origin:['http://localhost:3000'],
+    methods:['GET','POST'],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
+//comprime peticiones json y archivos estaticos
+app.use(compression());
+
 //middleware que recibe los body de las peticiones entrantes antes que los handlers
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+//static files
+app.use('/static',express.static('public'));
 
 //ENRUTADO PRINCIPAL
 app.use("/",appRouter);
